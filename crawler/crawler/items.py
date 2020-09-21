@@ -1,18 +1,8 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
 
-class CrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
-
-class BookItem(scrapy.Item):
-    title = scrapy.Field()
-    price = scrapy.Field()
-    in_stock = scrapy.Field()
+class SteamItem(scrapy.Item):
+    name = scrapy.Field()
+    normal_price = scrapy.Field()
+    sale_price = scrapy.Field()
+    quantity = scrapy.Field()

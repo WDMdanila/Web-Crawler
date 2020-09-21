@@ -1,25 +1,28 @@
 import scrapy
-from ..items import BookItem
+from ..items import SteamItem
 
 
-class BooksSpider(scrapy.Spider):
-    name = 'books'
-    start_urls = ['http://books.toscrape.com']
+class SteamSpider(scrapy.Spider):
+    name = 'agents'
+    start_urls = ["https://steamcommunity.com/market/search?q=&category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_Type_CustomPlayer&appid=730"]
+    page_num = 1
 
     def parse(self, response, **kwargs):
-        item = BookItem()
+        item = SteamItem()
 
-        for prod in response.css('.product_pod'):
-            item['title'] = prod.css('h3 a::attr(title)').get()
-            item['price'] = prod.css('div .price_color::text').get()
-            item['in_stock'] = True if prod.css('.icon-ok').get() else None
+        for prod in response.css('div .market_listing_row'):
+            item['name'] = prod.css('.market_listing_item_name::text').get()
+            item['normal_price'] = prod.css('.normal_price .normal_price::text').get()
+            item['sale_price'] = prod.css('.sale_price::text').get()
+            item['quantity'] = prod.css('.market_listing_num_listings_qty ::attr(data-qty)').get()
             yield item
 
-        next_page = response.css('li.next a::attr(href)').get()
-        if next_page:
-            next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+        if not response.css('#searchResults_btn_next.pagebtn.disabled').get():
+            self.page_num += 1
+            page = response.url + f'#p{self.page_num}_popular_desc'
+            yield scrapy.Request(page, callback=self.parse)
         else:
-            item['title'] = 'FINISHED PROCESSING'
-            item['price'] = '%123321%'
+            item['name'] = 'FINISHED PROCESSING'
+            item['normal_price'] = '%123321%'
+            item['sale_price'] = '%123321%'
             yield item
